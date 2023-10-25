@@ -8,6 +8,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
@@ -15,13 +17,18 @@ jobs:
           bundler-cache: true
       - name: scheduling
         run: bundle exec ruby scheduler.rb
-      - name: Commit new schedule
+      - name: Diff
+        id: diff
         run: |
-          if ! git diff --exit-code --quiet
-          then
-            git add schedule.ics
-            git config --local user.email "yoshiori@gmail.com"
-            git config --local user.name "yoshiori"
-            git commit -m "Update schedule"
-            git push origin main
-          fi
+          git add -N .
+          git diff --name-only --exit-code
+        continue-on-error: true
+      - name: Commit & Push
+        run: |
+          set -x
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add .
+          git commit --author=. -m 'generated'
+          git push
+        if: steps.diff.outcome == 'failure'
