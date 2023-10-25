@@ -8,6 +8,7 @@ LOTTERY_PERIOD = Event.new("抽選期間", 5)
 RESULT_ANNOUNCEMENT = Event.new("結果発表期間", 4)
 
 cal = Icalendar::Calendar.parse(File.read(ICAL_FILE)).first
+cal.timezone.tzid = "Asia/Tokyo"
 unless cal.events[1].dtend < Date.today # latest result announcement date
   puts "Latest Result announement end day: #{cal.events[1].dtend}, today: #{Date.today}"
   exit
