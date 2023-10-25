@@ -1,0 +1,27 @@
+name: Update schedule
+on:
+  schedule:
+    - cron:  '0 0 * * *'
+  workflow_dispatch:
+jobs:
+  scheduling:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+      - name: scheduling
+        run: bundle exec ruby scheduler.rb
+      - name: Commit new schedule
+        run: |
+          if ! git diff --exit-code --quiet
+          then
+            git add schedule.ics
+            git config --local user.email "yoshiori@gmail.com"
+            git config --local user.name "yoshiori"
+            git commit -m "Update schedule"
+            git push origin main
+          fi
